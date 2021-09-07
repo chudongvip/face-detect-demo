@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在 canvas 中播放视频</title>
+</head>
+<body>
+
+  <video autoplay playsinline muted onloadeddata="init()"  onloadedmetadata="main()"></video>
+
+  <canvas></canvas>
+
+  <script>
+
+    const video = document.querySelector('video');
+    const canvas = document.querySelector('canvas');
+    const context = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({video: {}}).then(stream => {
+      video.srcObject = stream;
+    });
+
+    function init() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+
+    async function main () {
+      context.drawImage(video, 0, 0);
+      // 循环执行操作 - 这里不推荐使用 setTimeout 因为在性能方面消耗会大许多，从而影响绘制的速度
+      requestAnimationFrame(main);
+    }
+
+  </script>
+</body>
+</html>

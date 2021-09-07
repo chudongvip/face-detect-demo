@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tfjs - face deta</title>
+
+  <script src="./lib/js/tfjs.js"></script>
+  <script src="./lib/js/blazeface.js"></script>
+</head>
+<body>
+
+  <input type="checkbox" name="" id="loveInEyes">情人西施   checked
+  <input type="checkbox" name="" id="wearMask">防疫达人
+  <input type="checkbox" name="" id="redMouse">烈焰红唇
+  <input type="checkbox" name="" id="smile">蜜汁微笑
+
+  <div id="container">
+    <video autoplay playsinline muted loop onloadeddata="onLoad()" onloadedmetadata="main()"></video>
+  </div>
+
+  <script>
+    let model = null;
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const input = document.querySelector('video');
+    document.querySelector('#container').appendChild(canvas);
+
+    async function main() {
+      const currentTime = Date.now();
+      if (model) {
+        // Pass in an image or video to the model. The model returns an array of
+        // bounding boxes, probabilities, and landmarks, one for each detected face.
+        const returnTensors = false; // Pass in `true` to get tensors back, rather than values.
+        const predictions = await model.estimateFaces(input, returnTensors);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(input, 0, 0);
+        // Pass in an image or video to the model. The model returns an array of
+        // bounding boxes, probabilities, and landmarks, one for each detected face.
+        if (predictions.length > 0) {
+          console.log('predictions  ', predictions);
+          /*
+          `predictions` is an array of objects describing each detected face, for example:
+
+          [
+            {
+              topLeft: [232.28, 145.26],
+              bottomRight: [449.75, 308.36],
+              probability: [0.998],
+              landmarks: [
+                [295.13, 177.64], // right eye
+                [382.32, 175.56], // left eye
+                [341.18, 205.03], // nose
+                [345.12, 250.61], // mouth
+                [252.76, 211.37], // right ear
+                [431.20, 204.93] // left ear
+              ]
+            }
+          ]
+          */
+
+          for (let i = 0; i < predictions.length; i++) {
+            const start = predictions[i].topLeft;
+            const end = predictions[i].bottomRight;
+            const size = [end[0] - start[0], end[1] - start[1]];
+
+            const rightEyeP = predictions[i].landmarks[0];
+            const leftEyeP = predictions[i].landmarks[1];
+            const noseP = predictions[i].landmarks[2];
+            const mouseP = predictions[i].landmarks[3];
+            const rightEarP = predictions[i].landmarks[4];
+            const leftEarP = predictions[i].landmarks[5];
+
+            // 姚明迷之微笑
+            if (smile.checked) {
+              const image = new Image();
+              image.src = "./assets/images/yaoMingSmile.jpeg";
+              image.onload = function() {
+                const top = noseP[1] - start[1];
+                const left = start[0];
+                // 嘴巴为中心点，一半上面一半下面
+                context.drawImage(image, start[0], start[1], size[0], size[1]);
+              }
+            }
+
+            // 眼睛添加爱心
+            if (loveInEyes.checked) {
+              const fontSize = rightEyeP[1] - start[1];
+              context.font = `${fontSize}px/${fontSize}px serif`;
+              context.fillStyle = 'red';
+              context.fillText('❤️', rightEyeP[0] - fontSize / 2, rightEyeP[1]);
+              context.fillText('❤️', leftEyeP[0] - fontSize / 2, leftEyeP[1]);
+            }
+
+            // 戴口罩
+            if (wearMask.checked) {
+              const image = new Image();
+              image.src = "./assets/images/mouthMask.png";
+              image.onload = function() {
+                const top = noseP[1] - start[1];
+                const left = start[0];
+                // 嘴巴为中心点，一半上面一半下面
+                context.drawImage(image, mouseP[0] - size[0] / 2, mouseP[1] - size[1] / 2, size[0], size[1]);
+              }
+            }
+
+            // 加个烈焰红唇
+            if (redMouse.checked) {
+              // 嘴巴大概是眼睛之前的宽度
+              const fontSize = Math.abs(rightEyeP[0] - leftEyeP[0]);
+              context.font = `${fontSize}px/${fontSize}px serif`;
+              context.fillStyle = 'red';
+              context.fillText('👄', mouseP[0] - fontSize / 2, mouseP[1] + fontSize / 2);
+            }
+          }
+        }
+      }
+      requestAnimationFrame(main);
+    }
+
+    function processingImgDataWithMosaic(imgData, x, y, width, height) {
+      // 定义为一块的边长是多少(这个图像宽高的整数倍)
+      var size = 8; // 区块中的最小单元大小必须大于1，否则本算法没有意义
+      var totalnum = size * size; // 区块内的像素点，也是区块的大小
+      // z 字循环，下标从 0 开始，所以 i * w + j 就为像素点的索引下标
+      for( var i = y; i < y + height; i += size ) {
+        for( var j = x; j < x + width; j += size ) {
+          // 计算当前像素点为顶点，取周围 size * size 区域的平均颜色强度（一块区域的的像素值）
+          var totalr = 0 , totalg = 0 , totalb = 0;
+          // y 轴向下取索引
+          for( var di = 0; di < size; di ++ ) {
+            for( var dj = 0; dj < size; dj ++ ) {
+              var x = i + di;
+              var y = j + dj;
+              var p = x * canvas.width + y;
+              totalr += imgData.data[p * 4 + 0];
+              totalg += imgData.data[p * 4 + 1];
+              totalb += imgData.data[p * 4 + 2];
+            }
+          }
+
+          // 轮训顶点开始的索引，即每个像素点的索引
+          var p = i * canvas.width + j;
+          var resr = totalr / totalnum;
+          var resg = totalg / totalnum;
+          var resb = totalb / totalnum;
+          // 这个快像素的值=它的平均值
+          for( var dx = 0; dx < size; dx ++ ) {
+            for( var dy = 0; dy < size; dy ++ ) {
+              var x = i + dx;
+              var y = j + dy;
+              var p = x * canvas.width + y;
+              imgData.data[p * 4 + 0] = resr;
+              imgData.data[p * 4 + 1] = resg;
+              imgData.data[p * 4 + 2] = resb;
+            }
+          }
+        }
+      }
+      return imgData;
+    }
+
+    async function start() {
+      input.src = "./assets/media/bbt.mp4";
+    }
+
+    async function onLoad() {
+      canvas.width = input.videoWidth;
+      canvas.height = input.videoHeight;
+      // Load the model.
+      model = await blazeface.load();
+    }
+
+    start();
+    // main();
+  </script>
+</body>
+</html>
