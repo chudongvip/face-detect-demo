@@ -9,7 +9,7 @@
 
 先来一张效果图
 
-![一张效果图](./effect-picture/multi-detect.png)
+![一张效果图](./effect-picture/multi-detect.gif)
 
 推荐 DEMO 路线，召唤师请跟随我！
 
