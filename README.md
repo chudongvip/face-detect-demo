@@ -9,7 +9,7 @@
 
 先来一张效果图
 
-![一张效果图](./multi-detect.png)
+![一张效果图](./effect-picture/multi-detect.png)
 
 推荐 DEMO 路线，召唤师请跟随我！
 
@@ -17,7 +17,7 @@
 
   图片处理，使用 canvas 绘制原图，然后通过人脸识别检测到眼睛的位置，在眼睛的位置添加上小 ♥️
 
-  ![一张效果图](./pic-add-red-heart.png)
+  ![一张效果图](./effect-picture/pic-add-red-heart.png)
 
 - `play-video-in-canvas.html`
 
@@ -29,13 +29,13 @@
 
   视频处理，通过人脸识别技术获取到视频每一帧（图片）中是否有人脸以及人脸五官的位置，然后在添加相对应的贴图。
 
-  ![检测视频中的眼睛](./detect-video-eyes.gif)
+  ![检测视频中的眼睛](./effect-picture/detect-video-eyes.gif)
 
 - `detect-camera.html`
 
   `play-video-in-canvas.html` 就是这个 DEMO 的铺垫，拿到了本地人脸信息，我就可以“为所欲为”了。
 
-  ![一张效果图](./single-detect-with-things.gif)
+  ![一张效果图](./effect-picture/single-detect-with-things.gif)
 
 
 ## 相关链接
